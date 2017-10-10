@@ -190,7 +190,7 @@ bool CTagLoaderTagLib::ParseTag(ASF::Tag *asf, EmbeddedArt *art, CMusicInfoTag& 
     {} // Known unsupported, suppress warnings
     else if (it->first == "WM/Year")
       SetDateRecorded(tag, it->second.front().toString().to8Bit(true));
-    else if (it->first == "WM/OriginalReleaseTime")
+    else if (it->first == "WM/OriginalReleaseTime" || it->first == "WM/OriginalReleaseYear")
       tag.SetDateOrigReleased(it->second.front().toString().to8Bit(true));
     else if (it->first == "WM/ReleaseTime")
       tag.SetDateReleased(it->second.front().toString().to8Bit(true));
@@ -514,7 +514,7 @@ bool CTagLoaderTagLib::ParseTag(APE::Tag *ape, EmbeddedArt *art, CMusicInfoTag& 
       tag.SetDiscNumber(it->second.toString().toInt());
     else if (it->first == "YEAR")
       SetDateRecorded(tag, it->second.toString().to8Bit(true));
-    else if (it->first == "ORININALYEAR")      
+    else if (it->first == "ORIGINALYEAR")
       tag.SetDateOrigReleased(it->second.toString().to8Bit(true));
     else if (it->first == "GENRE")
       SetGenre(tag, StringListToVectorString(it->second.toStringList()));
