@@ -282,6 +282,7 @@ void CAdvancedSettings::Initialize()
   m_musicArtistSeparators = { ";", " feat. ", " ft. " };
   m_videoItemSeparator = " / ";
   m_iMusicLibraryDateAdded = 1; // prefer mtime over ctime and current time
+  m_iMusicLibraryDateSort = 0; // prefer what should be the earliest date
 
   m_bVideoLibraryAllItemsOnBottom = false;
   m_iVideoLibraryRecentlyAddedItems = 25;
@@ -729,6 +730,7 @@ void CAdvancedSettings::ParseSettingsFile(const std::string &file)
     XMLUtils::GetString(pElement, "albumformat", m_strMusicLibraryAlbumFormat);
     XMLUtils::GetString(pElement, "itemseparator", m_musicItemSeparator);
     XMLUtils::GetInt(pElement, "dateadded", m_iMusicLibraryDateAdded);
+    XMLUtils::GetInt(pElement, "datesort", m_iMusicLibraryDateSort);
     //Music artist name separators
     TiXmlElement* separators = pElement->FirstChildElement("artistseparators");
     if (separators)

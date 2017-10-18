@@ -253,6 +253,7 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
 
     int m_iMusicLibraryRecentlyAddedItems;
     int m_iMusicLibraryDateAdded;
+    int m_iMusicLibraryDateSort;
     bool m_bMusicLibraryAllItemsOnBottom;
     bool m_bMusicLibraryCleanOnUpdate;
     bool m_bMusicLibraryArtistSortOnUpdate;
