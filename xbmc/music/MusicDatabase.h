@@ -557,6 +557,10 @@ public:
   */
   void SetMusicTagScanVersion(int version = 0);
 
+  /*! \brief Set the preferred song column for date sorting
+  */
+  void SetMusicTagScanDateSort();
+
 protected:
   std::map<std::string, int> m_genreCache;
   std::map<std::string, int> m_pathCache;

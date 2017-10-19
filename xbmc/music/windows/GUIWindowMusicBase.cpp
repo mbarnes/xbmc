@@ -1350,6 +1350,9 @@ void CGUIWindowMusicBase::OnInitWindow()
       m_musicdatabase.SetMusicTagScanVersion();
     }
   }
+
+  // Record the <datesort> preference from advancedsettings.xml.
+  m_musicdatabase.SetMusicTagScanDateSort();
 }
 
 std::string CGUIWindowMusicBase::GetStartFolder(const std::string &dir)

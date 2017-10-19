@@ -203,8 +203,8 @@ void CMusicDatabase::CreateTables()
   m_pDS->exec("CREATE TABLE art(art_id INTEGER PRIMARY KEY, media_id INTEGER, media_type TEXT, type TEXT, url TEXT)");
 
   CLog::Log(LOGINFO, "create versiontagscan table");
-  m_pDS->exec("CREATE TABLE versiontagscan (idVersion integer, iNeedsScan integer)");
-  m_pDS->exec(PrepareSQL("INSERT INTO versiontagscan (idVersion, iNeedsScan) values(%i, 0)", GetSchemaVersion()));
+  m_pDS->exec("CREATE TABLE versiontagscan (idVersion INTEGER, iNeedsScan INTEGER, iDateSort INTEGER)");
+  m_pDS->exec(PrepareSQL("INSERT INTO versiontagscan (idVersion, iNeedsScan, iDateSort) values(%i, 0, 0)", GetSchemaVersion()));
 }
 
 void CMusicDatabase::CreateAnalytics()
@@ -5230,6 +5230,10 @@ void CMusicDatabase::UpdateTables(int version)
     m_pDS->exec("ALTER TABLE song ADD strDateRecorded TEXT\n");
     m_pDS->exec("ALTER TABLE song ADD strDateOrigReleased TEXT\n");
     m_pDS->exec("ALTER TABLE song ADD strDateReleased TEXT\n");
+
+    // Add iDateSort to the versiontagscan table.  This controls how the songview
+    // view chooses a year from song.strDate* fields when song.iYear field is NULL.
+    m_pDS->exec("ALTER TABLE versiontagscan ADD iDateSort INTEGER\n");
   }
   // Set the verion of tag scanning required. 
   // Not every schema change requires the tags to be rescanned, set to the highest schema version 
@@ -5272,6 +5276,7 @@ int CMusicDatabase::GetMusicNeedsTagScan()
     int idVersion = m_pDS->fv("idVersion").get_asInt();
     int iNeedsScan = m_pDS->fv("iNeedsScan").get_asInt();
     m_pDS->close();
+
     if (idVersion < iNeedsScan)
       return idVersion;
     else
@@ -5295,6 +5300,13 @@ void CMusicDatabase::SetMusicTagScanVersion(int version /* = 0 */)
     m_pDS->exec(PrepareSQL("UPDATE versiontagscan SET idVersion=%i", GetSchemaVersion()));
   else
     m_pDS->exec(PrepareSQL("UPDATE versiontagscan SET idVersion=%i", version));
+}
+
+void CMusicDatabase::SetMusicTagScanDateSort()
+{
+  int datesort = g_advancedSettings.m_iMusicLibraryDateSort;
+
+  m_pDS->exec(PrepareSQL("UPDATE versiontagscan SET iDateSort='%i'", datesort));
 }
 
 unsigned int CMusicDatabase::GetSongIDs(const Filter &filter, std::vector<std::pair<int,int> > &songIDs)
