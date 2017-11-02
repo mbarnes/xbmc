@@ -5239,9 +5239,9 @@ void CMusicDatabase::UpdateTables(int version)
   // The original db version when the tags were scanned, and the minimal db version needed are 
   // later used to determine if a forced rescan should be prompted
   
-  // The last schema change needing forced rescanning was 60.
-  // Mostly because of the new tags processed by v17 rather than a schema change.
-  SetMusicNeedsTagScan(60);
+  // The last schema change needing forced rescanning was 68, in order to
+  // zero out the song.iYear column and utilize the new song date columns.
+  SetMusicNeedsTagScan(68);
 
   // After all updates, store the original db version. 
   // This indicates the version of tag processing that was used to populate db
