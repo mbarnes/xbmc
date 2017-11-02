@@ -177,8 +177,10 @@ void CMusicDatabase::CreateTables()
               " strArtistDisp text, strArtistSort text, strGenres text, strTitle varchar(512), "
               " iTrack integer, iDuration integer,  "
               " strFileName text, strMusicBrainzTrackID text, "
-              " iYear INTEGER, strDateRecorded TEXT, "
-              " strDateOrigReleased TEXT, strDateReleased TEXT, "
+              " iYear INTEGER, "
+              " strDateRecorded TEXT, iYearRecorded INTEGER, "
+              " strDateOrigReleased TEXT, iYearOrigRecorded INTEGER, "
+              " strDateReleased TEXT, iYearReleased INTEGER, "
               " iTimesPlayed integer, iStartOffset integer, iEndOffset integer, "
               " lastplayed varchar(20) default NULL, "
               " rating FLOAT NOT NULL DEFAULT 0, votes INTEGER NOT NULL DEFAULT 0, "
@@ -286,21 +288,18 @@ void CMusicDatabase::CreateViews()
               "        iTrack, iDuration, "
               "        CASE"
               "            WHEN song.iYear > 0 THEN song.iYear"
-              "            WHEN versiontagscan.iDateSort = 0 THEN CAST("
-              "                coalesce(nullif(substr(trim(song.strDateRecorded), 1, 4), ''),"
-              "                         nullif(substr(trim(song.strDateOrigReleased), 1, 4), ''),"
-              "                         nullif(substr(trim(song.strDateReleased), 1, 4), ''))"
-              "                AS INTEGER)"
-              "            WHEN versiontagscan.iDateSort = 1 THEN CAST("
-              "                coalesce(nullif(substr(trim(song.strDateReleased), 1, 4), ''),"
-              "                         nullif(substr(trim(song.strDateOrigReleased), 1, 4), ''),"
-              "                         nullif(substr(trim(song.strDateRecorded), 1, 4), ''))"
-              "                AS INTEGER)"
-              "            WHEN versiontagscan.iDateSort = 2 THEN CAST("
-              "                coalesce(nullif(substr(trim(song.strDateOrigReleased), 1, 4), ''),"
-              "                         nullif(substr(trim(song.strDateRecorded), 1, 4), ''),"
-              "                         nullif(substr(trim(song.strDateReleased), 1, 4), ''))"
-              "                AS INTEGER)"
+              "            WHEN versiontagscan.iDateSort = 0 THEN"
+              "                coalesce(nullif(song.iYearRecorded, 0),"
+              "                         nullif(song.iYearOrigReleased, 0),"
+              "                         nullif(song.iYearReleased, 0))"
+              "            WHEN versiontagscan.iDateSort = 1 THEN"
+              "                coalesce(nullif(song.iYearReleased, 0),"
+              "                         nullif(song.iYearOrigReleased, 0),"
+              "                         nullif(song.iYearRecorded, 0))"
+              "            WHEN versiontagscan.iDateSort = 2 THEN"
+              "                coalesce(nullif(song.iYearOrigReleased, 0),"
+              "                         nullif(song.iYearRecorded, 0),"
+              "                         nullif(song.iYearReleased, 0))"
               "            ELSE 0"
               "        END AS iYear, "
               "        strFileName, "
@@ -622,11 +621,13 @@ int CMusicDatabase::AddSong(const int idAlbum,
       strSQL=PrepareSQL("INSERT INTO song ("
                                           "idSong,idAlbum,idPath,strArtistDisp,strGenres,"
                                           "strTitle,iTrack,iDuration,iYear,strFileName,"
-                                          "strDateRecorded, strDateReleased, strDateOrigReleased,"
+                                          "strDateRecorded,iYearRecorded,"
+                                          "strDateReleased,iYearReleased,"
+                                          "strDateOrigReleased,iYearOrigReleased,"
                                           "strMusicBrainzTrackID, strArtistSort, "
                                           "iTimesPlayed,iStartOffset, "
                                           "iEndOffset,lastplayed,rating,userrating,votes,comment,mood,strReplayGain"
-                        ") values (NULL, %i, %i, '%s', '%s', '%s', %i, %i, %i, '%s', '%s', '%s', '%s'",
+                        ") values (NULL, %i, %i, '%s', '%s', '%s', %i, %i, %i, '%s', '%s', %i, '%s', %i, '%s', %i",
                     idAlbum,
                     idPath,
                     artistDisp.c_str(),
@@ -634,7 +635,12 @@ int CMusicDatabase::AddSong(const int idAlbum,
                     strTitle.c_str(),
                     iTrack, iDuration, iYear,                    
                     strFileName.c_str(),
-                    strDateRecorded.c_str(), strDateReleased.c_str(), strDateOrigReleased.c_str());
+                    strDateRecorded.c_str(),
+                    atoi(strDateRecorded.c_str()),
+                    strDateReleased.c_str(),
+                    atoi(strDateReleased.c_str()),
+                    strDateOrigReleased.c_str(),
+                    atoi(strDateOrigReleased.c_str()));
 
       if (strMusicBrainzTrackID.empty())
         strSQL += PrepareSQL(",NULL");
@@ -790,14 +796,21 @@ int CMusicDatabase::UpdateSong(int idSong,
 
   strSQL = PrepareSQL("UPDATE song SET idPath = %i, strArtistDisp = '%s', strGenres = '%s', "
       " strTitle = '%s', iTrack = %i, iDuration = %i, iYear = %i, strFileName = '%s', "
-      " strDateRecorded = '%s', strDateReleased = '%s', strDateOrigReleased = '%s', ",
+      " strDateRecorded = '%s', iYearRecorded = %i, "
+      " strDateReleased = '%s', iYearReleased = %i, "
+      " strDateOrigReleased = '%s', iYearOrigReleased = %i",
       idPath,
       artistDisp.c_str(),
       StringUtils::Join(genres, g_advancedSettings.m_musicItemSeparator).c_str(),
       strTitle.c_str(),
       iTrack, iDuration, iYear,
       strFileName.c_str(),
-      strDateRecorded.c_str(), strDateReleased.c_str(), strDateOrigReleased.c_str()
+      strDateRecorded.c_str(),
+      atoi(strDateRecorded.c_str()),
+      strDateReleased.c_str(),
+      atoi(strDateReleased.c_str()),
+      strDateOrigReleased.c_str(),
+      atoi(strDateOrigReleased.c_str())
   );
   if (strMusicBrainzTrackID.empty())
     strSQL += PrepareSQL(", strMusicBrainzTrackID = NULL");
@@ -5251,6 +5264,12 @@ void CMusicDatabase::UpdateTables(int version)
     m_pDS->exec("ALTER TABLE song ADD strDateRecorded TEXT\n");
     m_pDS->exec("ALTER TABLE song ADD strDateOrigReleased TEXT\n");
     m_pDS->exec("ALTER TABLE song ADD strDateReleased TEXT\n");
+
+    // These cache the year part of the above dates as integers for the benefit
+    // of the songview view.
+    m_pDS->exec("ALTER TABLE song ADD iYearRecorded INTEGER\n");
+    m_pDS->exec("ALTER TABLE song ADD iYearOrigReleased INTEGER\n");
+    m_pDS->exec("ALTER TABLE song ADD iYearReleased INTEGER\n");
 
     // Add iDateSort to the versiontagscan table.  This controls how the songview
     // view chooses a year from song.strDate* fields when song.iYear field is NULL.
